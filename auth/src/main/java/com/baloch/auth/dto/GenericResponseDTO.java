@@ -7,18 +7,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @Component
-public class ResponseUserDTO {
-    private String user_id;
+public class GenericResponseDTO {
     private String username;
-    private String password;
-    private Role role;
-
-    public ResponseUserDTO() {
-
+    private Collection<GrantedAuthority> roles;
+    
+    public GenericResponseDTO() {
     }
 }

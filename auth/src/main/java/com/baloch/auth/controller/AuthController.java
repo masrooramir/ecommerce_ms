@@ -1,20 +1,15 @@
 package com.baloch.auth.controller;
 
+import com.baloch.auth.dto.GenericResponseDTO;
 import com.baloch.auth.dto.PasswordDTO;
 import com.baloch.auth.dto.RequestDTO;
 import com.baloch.auth.dto.UsernameDTO;
 import com.baloch.auth.model.UserCredentials;
 import com.baloch.auth.model.UserDetailsPrincipal;
 import com.baloch.auth.service.AuthService;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,14 +19,15 @@ public class AuthController {
     private final AuthService authService;
 
     @GetMapping("/validate-token")
-    public Boolean validate(Authentication auth){
-        System.out.println("Validate-Token Api");
-        return  authService.validate(auth);
+    public GenericResponseDTO validateToken(@AuthenticationPrincipal UserDetailsPrincipal user){
+        GenericResponseDTO a = authService.validateToken(user);
+        System.out.println(a);
+        return a;
     }
 
     @PostMapping("/login")
-    public Object login(@RequestBody UserCredentials user, HttpServletResponse res){
-        return authService.login(user, res);
+    public Object login(@RequestBody UserCredentials user){
+        return authService.login(user);
     }
 
     @PostMapping("/register")

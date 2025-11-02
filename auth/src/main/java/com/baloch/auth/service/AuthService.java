@@ -4,21 +4,19 @@ import com.baloch.auth.config.SecurityConfig;
 import com.baloch.auth.dto.*;
 import com.baloch.auth.handlers.HandlerMethod;
 import com.baloch.auth.model.UserCredentials;
+import com.baloch.auth.model.UserDetailsPrincipal;
 import com.baloch.auth.repository.AuthRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Service
 @AllArgsConstructor
@@ -29,11 +27,26 @@ public class AuthService {
     private HandlerMethod handlerMethod;
     private JWTService jwtService;
 
-    public Boolean validate(Authentication auth){
-        return auth.isAuthenticated();
+    public GenericResponseDTO validateToken(UserDetailsPrincipal user){
+        GenericResponseDTO responseDTO= new GenericResponseDTO();
+        responseDTO.setUsername(user.getUsername());
+
+        Collection<? extends GrantedAuthority> grantedAuthorities = user.getAuthorities();
+        Collection<GrantedAuthority> roles = new ArrayList<>();
+        for (GrantedAuthority authority : grantedAuthorities) {
+            roles.add(authority);
+//            if (authority instanceof Role) {
+//                roles.add((Role) authority);
+//            } else {
+//                // Handle cases where the authority is not a Role, e.g., log a warning or throw an exception
+//                System.err.println("Warning: GrantedAuthority is not a Role: " + authority.getClass().getName());
+//            }
+        }
+        responseDTO.setRoles(roles);
+        return responseDTO;
     }
 
-    public Object login(UserCredentials user, HttpServletResponse response) {
+    public Object login(UserCredentials user) {
         String username = user.getUsername();
         String password = user.getPassword();
 

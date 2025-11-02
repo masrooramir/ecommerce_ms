@@ -37,11 +37,15 @@ public class JWTFilter extends OncePerRequestFilter {
         String username="";
 
         if (authInput == null ) {
-
-            if(Objects.equals(uri, "/api/v1/auth/register") || Objects.equals(uri, "/api/v1/auth/login")) {
+            System.out.println(uri);
+            if(uri.equals("/api/v1/auth/register") || uri.equals("/api/v1/auth/login")) {
+                System.out.println("11111111111");
                 filterChain.doFilter(request,response);
                 return;
             }
+
+            System.out.println("2222222222");
+
             setResponse(response,HttpStatus.UNAUTHORIZED.value(),
                     "Invalid authentication error!","MISSING_TOKEN_ERROR");
             return;
@@ -49,22 +53,37 @@ public class JWTFilter extends OncePerRequestFilter {
 
         if (authInput.startsWith("Bearer ")) {
             jwtToken = authInput.substring(7);
-            if(jwtService.extractUsername(jwtToken)==null){
-                setResponse(response,HttpStatus.BAD_REQUEST.value(),
-                        "Invalid user token error! Re-login to get valid token","INVALID_TOKEN_ERROR");
+
+            try {
+                username = jwtService.extractUsername(jwtToken);
+
+                if (username == null) {
+                    System.out.println("333333333333");
+                    setResponse(response, HttpStatus.BAD_REQUEST.value(),
+                            "Invalid user token error! Re-login to get valid token", "INVALID_TOKEN_ERROR");
+                    return;
+                }
+
+                System.out.println("44444444");
+                username = jwtService.extractUsername(jwtToken);
+            }catch (Exception e){
+                setResponse(response, HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        e.toString(), "JWT_TOKEN_ERROR");
                 return;
             }
-            username = jwtService.extractUsername(jwtToken);
+
         }
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
-
+            System.out.println("555555555");
             if(!jwtService.validateToken(jwtToken,userDetails)) {
+                System.out.println("66666666666");
                 setResponse(response,HttpStatus.BAD_REQUEST.value(),
                             "Invalid user token error! Re-login to get valid token","INVALID_TOKEN_ERROR");
                 return;
             }
+            System.out.println("77777777");
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, userDetails.getPassword(), userDetails.getAuthorities());
@@ -74,7 +93,9 @@ public class JWTFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 if(Objects.equals(request.getRequestURI(), "/api/v1/auth/validate-token")){
-//                    filterChain.doFilter(request,response);
+                    System.out.println("88888888");
+
+                    filterChain.doFilter(request,response);
                     return;
                 }
 
