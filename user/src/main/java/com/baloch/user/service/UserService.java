@@ -4,6 +4,7 @@ import com.baloch.user.core.handlers.HandlerMethod;
 import com.baloch.user.dto.*;
 import com.baloch.user.model.User;
 import com.baloch.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +40,16 @@ public class UserService{
         }
     }
 
+
+
     // CREATE-USER SERVICE
     public Object createUser(UserRequest userRequest){
+        System.out.println();
+        if (userRequest.getId()==null || userRequest.getUsername()==null){
+            System.out.println("''''''''''''''''''''");
+            throw new RuntimeException("Error Occured");
+        }
+        System.out.println("---------------");
         User user = userRequestMethod(userRequest);
 
         try {
@@ -81,7 +90,7 @@ public class UserService{
 
     User userRequestMethod(UserRequest userRequest){
         User user = new User();
-        user.setUser_id(user.getUser_id());
+        user.setUser_id(userRequest.getId());
         user.setUsername(userRequest.getUsername());
         return user;
     }

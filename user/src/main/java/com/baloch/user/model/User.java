@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 public class User {
 
     @Id
+    @Column(name = "custom_id", unique = true, nullable = false)
     private String user_id;
 
     @Column(unique = true,nullable = false)
@@ -22,7 +23,7 @@ public class User {
 
     private String name;
 
-    @Column(unique = true,nullable = false)
+    @Column(unique = true)
     private String email;
 
     private int age;

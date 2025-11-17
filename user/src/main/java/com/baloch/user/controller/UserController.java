@@ -23,6 +23,7 @@ public class UserController {
 
     @PostMapping
     public Object createUser(@RequestBody UserRequest userRequest){
+        System.out.println("_____________________________"+userRequest);
         return userService.createUser(userRequest);
     }
 

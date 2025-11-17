@@ -6,7 +6,9 @@ import com.baloch.auth.handlers.HandlerMethod;
 import com.baloch.auth.model.UserCredentials;
 import com.baloch.auth.model.UserDetailsPrincipal;
 import com.baloch.auth.repository.AuthRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,18 +16,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AuthService {
     private CustomUserDetailsService customUserDetailsService;
     private final AuthRepository authRepository;
     private final SecurityConfig customSecurityConfig;
     private HandlerMethod handlerMethod;
     private JWTService jwtService;
+    private RestTemplate restTemplate;
 
     public GenericResponseDTO validateToken(UserDetailsPrincipal user){
         GenericResponseDTO responseDTO= new GenericResponseDTO();
@@ -60,12 +65,17 @@ public class AuthService {
         return ResponseEntity.status(HttpStatus.CREATED).body("Authentication Failed");
     }
 
+    @Transactional
     public Object register(RequestDTO userRequestBody) {
         UserCredentials userCredentials = getUserCredentialsMethod(userRequestBody);
         userCredentials.setPassword(customSecurityConfig.passwordEncoder().encode(userCredentials.getPassword()));
 
         try {
             ResponseDTO responseDTO = getUserCredentialsResponseMethod(authRepository.save(userCredentials));
+
+            RequestForUser requestForUser = new RequestForUser(responseDTO.getUser_id(),"responseDTO.getUsername()");
+
+            restTemplate.postForEntity("http://localhost:8082/api/v1/user",requestForUser,Object.class);
 
             GenericResponseBody genericResponseBody = handlerMethod.genericResponseBodyMethod(
                     201,"New User Created Successfully",
